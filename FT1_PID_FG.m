@@ -57,7 +57,8 @@
     [gw,w,arm,Kp]=Identificar(n, d, eps,Tc,yr,ur);
 
     Ku = -1/gw;
-    Tu = (2*pi)/w; 
+    Tu = (2*pi)/w;
+    %Tu = (2*180)/w;
 
     L = 2;
    
@@ -66,12 +67,12 @@
     a = (c + cos(w*L))/(w^2);
     
 %% 3.1 teste modelo:
- a = 1/0.2133;
- b = 0.6667/0.2133;
- c = 0.1067/0.2133;
+%  a = 1/0.2133;
+%  b = 0.6667/0.2133;
+%  c = 0.1067/0.2133;
 %% Definições do controlador AT-PID-FG: 
 
-    Am = .5;
+    Am = 3;
 
     Am_min = 2; 
     Am_max = 5;
@@ -154,6 +155,7 @@ k = 2*P1(i)*P2(i);
      
       
             Ami = Am(i)*Am_max + Am_min*(1 - Am(i)); 
+            %Ami = 1;
       %Controlador:
 
 %             alpha = (Kc)*(1+((Td)/Tamostra)+(Tamostra/(2*(Ti))));
@@ -192,12 +194,12 @@ plot(tempo,u);
 plot(tempo,ref);
 title(['FT1-PID-FG:',num2str(rlevel), ' ISE:', num2str(ISE_t2), ', ITSE:' ,num2str(ITSE_t2),', IAE:' ,num2str(IAE_t2), ', ITAE:' ,num2str(ITAE_t2)])
 %%
-%plotar P1 e P2
-figure;
-grid;
-plot(tempo,P1,'g-');
-hold on;
-plot(tempo,P2);
+% %plotar P1 e P2
+% figure;
+% grid;
+% plot(tempo,P1,'g-');
+% hold on;
+% plot(tempo,P2);
 %%
 %plotar Kp,Kd,Ki
 figure;
@@ -207,8 +209,10 @@ hold on;
 plot(tempo,Kdi);
 hold on;
 plot(tempo,Kii);
-
+title('FT1-PID-FG: Kp,Ki,Kd')
+legend('Kc','Kd','Ki')
 %%
 figure;
 grid;
 plot(tempo,Am,'g-');
+title('FT1-PID-FG: Am')
