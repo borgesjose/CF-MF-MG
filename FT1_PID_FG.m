@@ -67,12 +67,12 @@
     a = (c + cos(w*L))/(w^2);
     
 %% 3.1 teste modelo:
-%  a = 1/0.2133;
-%  b = 0.6667/0.2133;
-%  c = 0.1067/0.2133;
+ a = 1/0.2133;
+ b = 0.6667/0.2133;
+ c = 0.1067/0.2133;
 %% Definições do controlador AT-PID-FG: 
 
-    Am = 3;
+    Am = 1;
 
     Am_min = 2; 
     Am_max = 5;
@@ -99,7 +99,7 @@ u(1)=0 ; u(2)=0 ; u(3)=0; u(4)=0;
 
 erro(1)=1 ; erro(2)=1 ; erro(3)=1; erro(4)=1;
 
-rlevel = 0;
+rlevel = 0.05;
 ruido = rlevel*rand(1,nptos);
 
 for i=5:nptos,
@@ -110,49 +110,14 @@ k = 2*P1(i)*P2(i);
     
 [c0,c1,c2,r0,r1,r2] = discretiza_zoh(P1(i),P2(i),k,Tc); %chama a função que discretiza o processo utilizano um ZOH;
 
-     %if (i==550),r1 = - 1.84;r2 = 0.9109;  end % Ruptura no modelo
+     if (i==550),r1 = - 1.84;r2 = 0.9109;  end % Ruptura no modelo
      
      y(i)= -r1*y(i-1)-r2*y(i-2)+c0*u(i-2)+c1*u(i-3)+c2*u(i-4); % equação da diferença do processo
      
      erro(i)=ref(i)-y(i); %Erro
      r(i)=(erro(i)-erro(i-1));%Erro rate
- 
-     %    {***********Região IC-1*****************}
-     if ( erro(i)>0  & r(i)>0 ) 
-         
-         mi5 = (-r(i)/L + 1)*(-erro(i)/L + 1); mi6 = (-erro(i)/L + 1)*(r(i)/L); mi8 = (erro(i)/L)*(-r(i)/L + 1); mi9 = (r(i)/L)*(erro(i)/L); 
-            
-         Am(i) = mi5*(1-exp(-mi5*4)) + mi6*(1-exp(-mi6*4)) + mi8*(exp(-mi8*4)) + mi9*(exp(-mi9*4));
-         
-     end;
-
-%      {***********Região IC-2*****************}
-      if ( erro(i)<=0  & r(i)<=0) 
-         
-         mi1 = (-r(i)/L )*(-erro(i)/L); mi2 = (-erro(i)/L)*(r(i)/L + 1); mi4 = (-r(i)/L)*(erro(i)/L + 1); mi5 = (r(i)/L + 1)*(erro(i)/L + 1); 
-            
-         Am(i) = mi1*(exp(-mi1*4)) + mi2*(exp(-mi2*4)) + mi4*(1 - exp(-mi4*4)) + mi5*( 1 - exp(-mi5*4));  
-      
-      end;
-
- %     {***********Região IC-3*****************}
-      if ( erro(i)>0  & r(i)<=0) 
-      
-           mi5 = (-r(i)/L + 1)*(-erro(i)/L + 1); mi4 = (-erro(i)/L + 1)*(r(i)/L); mi8 = (erro(i)/L)*(-r(i)/L + 1); mi7 = (-r(i)/L)*(erro(i)/L); 
-            
-           Am(i) = mi5*(1-exp(-mi5*4))+mi4*(1-exp(-mi4*4))+mi8*(exp(-mi8*4))+mi7*(exp(-mi7*4));
-      
-      end;
-      
- %      {***********Região IC-4*****************}
-      if ( erro(i)<=0  & r(i)>0)
-          
-          mi5 = (-r(i)/L + 1)*(erro(i)/L + 1); mi6 = (erro(i)/L + 1)*(r(i)/L); mi2 = (-erro(i)/L)*(-r(i)/L + 1); mi3 = (-r(i)/L)*(-erro(i)/L); 
-            
-          Am(i) = mi5*(1-exp(-mi5*4)) + mi6*(1-exp(-mi6*4)) + mi2*(exp(-mi2*4)) + mi3*(exp(-mi3*4));
-      
-      end
      
+            Am(i) = FT1_controler(erro(i),r(i),L);
       
             Ami = Am(i)*Am_max + Am_min*(1 - Am(i)); 
             %Ami = 1;
@@ -162,9 +127,9 @@ k = 2*P1(i)*P2(i);
 %             beta = -(Kc)*(1+2*((Td)/Tamostra)-(Tamostra/(2*(Ti))));
 %             gama = (Kc)*(Td)/Tamostra;
 
-Kci(i) = Kc/Ami;
-Kdi(i) = Kd/Ami;
-Kii(i) = Ki/Ami;
+            Kci(i) = Kc/Ami;
+            Kdi(i) = Kd/Ami;
+            Kii(i) = Ki/Ami;
 
       % new version
             alpha = Kci(i)+ Kdi(i)/Tamostra + (Kii(i)*Tamostra)/2;
