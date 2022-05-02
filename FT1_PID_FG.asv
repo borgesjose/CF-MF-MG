@@ -66,17 +66,7 @@
     a = (c + cos(w*L))/(w^2);
     
 %% 3.1 teste modelo:
-% 
-% step(ft,50)
-% hold on;
- Gp = exp(-s*L)/(a*s^2 + b*s + c)
-% step(Gp,50)
-% 
-% ft
 
-nyquist(ft)
-hold on
-nyquist(Gp)
 %% Definições do controlador AT-PID-FG: 
 
     Am = 3;
@@ -122,7 +112,7 @@ k = 2*P1(i)*P2(i);
      y(i)= -r1*y(i-1)-r2*y(i-2)+c0*u(i-2)+c1*u(i-3)+c2*u(i-4); % equação da diferença do processo
      
      erro(i)=ref(i)-y(i); %Erro
- 
+     r(i)=(erro(i)-erro(i-1));%Erro rate
  
      %    {***********Região IC-1*****************}
      if ( erro(i)>0  & r(i)>0 ) 
@@ -167,11 +157,15 @@ k = 2*P1(i)*P2(i);
 %             alpha = (Kc)*(1+((Td)/Tamostra)+(Tamostra/(2*(Ti))));
 %             beta = -(Kc)*(1+2*((Td)/Tamostra)-(Tamostra/(2*(Ti))));
 %             gama = (Kc)*(Td)/Tamostra;
-            
+
+Kci(i) = Kc/Ami;
+Kdi(i) = Kd/Ami;
+Kii(i) = Ki/Ami;
+
       % new version
-            alpha = Kc/Ami+ (Kd/Ami)/Tamostra + ((Ki/Ami)*Tamostra)/2;
-            beta = -(Kc/Ami) - 2*((Kd/Ami)/Tamostra)+(Ki*Tamostra)/2;
-            gama = (Kd/Ami)/Tamostra;
+            alpha = Kci(i)+ Kdi(i)/Tamostra + ((Ki/Ami)*Tamostra)/2;
+            beta = -(Kc/Ami) - 2*(Kdi(i)/Tamostra)+((Ki/Ami)*Tamostra)/2;
+            gama = Kdi(i)/Tamostra;
 
 
             u(i)= u(i-1) + alpha*erro(i) + beta*erro(i-1) + gama*erro(i-2);

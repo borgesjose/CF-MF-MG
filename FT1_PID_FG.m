@@ -66,27 +66,19 @@
     a = (c + cos(w*L))/(w^2);
     
 %% 3.1 teste modelo:
-% 
-% step(ft,50)
-% hold on;
- Gp = exp(-s*L)/(a*s^2 + b*s + c)
-% step(Gp,50)
-% 
-% ft
-
-nyquist(ft)
-hold on
-nyquist(Gp)
+ a = 1/0.2133;
+ b = 0.6667/0.2133;
+ c = 0.1067/0.2133;
 %% Definições do controlador AT-PID-FG: 
 
-    Am = 3;
+    Am = .5;
 
     Am_min = 2; 
     Am_max = 5;
     Theta_m_min = 45;
     Theta_m_max = 72;
     
-    Theta_m = (180/2)*(1-(1/Am));
+    %Theta_m = (180/2)*(1-(1/Am));
 
 %% Sintonizanodo o PID:
 
@@ -106,7 +98,7 @@ u(1)=0 ; u(2)=0 ; u(3)=0; u(4)=0;
 
 erro(1)=1 ; erro(2)=1 ; erro(3)=1; erro(4)=1;
 
-rlevel = 0.1;
+rlevel = 0;
 ruido = rlevel*rand(1,nptos);
 
 for i=5:nptos,
@@ -117,12 +109,12 @@ k = 2*P1(i)*P2(i);
     
 [c0,c1,c2,r0,r1,r2] = discretiza_zoh(P1(i),P2(i),k,Tc); %chama a função que discretiza o processo utilizano um ZOH;
 
-     if (i==550),r1 = - 1.84;r2 = 0.9109;  end % Ruptura no modelo
+     %if (i==550),r1 = - 1.84;r2 = 0.9109;  end % Ruptura no modelo
      
      y(i)= -r1*y(i-1)-r2*y(i-2)+c0*u(i-2)+c1*u(i-3)+c2*u(i-4); % equação da diferença do processo
      
      erro(i)=ref(i)-y(i); %Erro
- 
+     r(i)=(erro(i)-erro(i-1));%Erro rate
  
      %    {***********Região IC-1*****************}
      if ( erro(i)>0  & r(i)>0 ) 
@@ -167,11 +159,15 @@ k = 2*P1(i)*P2(i);
 %             alpha = (Kc)*(1+((Td)/Tamostra)+(Tamostra/(2*(Ti))));
 %             beta = -(Kc)*(1+2*((Td)/Tamostra)-(Tamostra/(2*(Ti))));
 %             gama = (Kc)*(Td)/Tamostra;
-            
+
+Kci(i) = Kc/Ami;
+Kdi(i) = Kd/Ami;
+Kii(i) = Ki/Ami;
+
       % new version
-            alpha = Kc/Ami+ (Kd/Ami)/Tamostra + ((Ki/Ami)*Tamostra)/2;
-            beta = -(Kc/Ami) - 2*((Kd/Ami)/Tamostra)+((Ki/Ami)*Tamostra)/2;
-            gama = (Kd/Ami)/Tamostra;
+            alpha = Kci(i)+ Kdi(i)/Tamostra + (Kii(i)*Tamostra)/2;
+            beta = -Kci(i) - 2*(Kdi(i)/Tamostra)+(Kii(i)*Tamostra)/2;
+            gama = Kdi(i)/Tamostra;
 
 
             u(i)= u(i-1) + alpha*erro(i) + beta*erro(i-1) + gama*erro(i-2);
@@ -194,7 +190,7 @@ plot(tempo,y,'g-');
 hold on;
 plot(tempo,u);
 plot(tempo,ref);
-title(['AT-PID-FG:',num2str(rlevel), ' ISE:', num2str(ISE_t2), ', ITSE:' ,num2str(ITSE_t2),', IAE:' ,num2str(IAE_t2), ', ITAE:' ,num2str(ITAE_t2)])
+title(['FT1-PID-FG:',num2str(rlevel), ' ISE:', num2str(ISE_t2), ', ITSE:' ,num2str(ITSE_t2),', IAE:' ,num2str(IAE_t2), ', ITAE:' ,num2str(ITAE_t2)])
 %%
 %plotar P1 e P2
 figure;
@@ -202,4 +198,17 @@ grid;
 plot(tempo,P1,'g-');
 hold on;
 plot(tempo,P2);
+%%
+%plotar Kp,Kd,Ki
+figure;
+grid;
+plot(tempo,Kci,'g-');
+hold on;
+plot(tempo,Kdi);
+hold on;
+plot(tempo,Kii);
 
+%%
+figure;
+grid;
+plot(tempo,Am,'g-');
