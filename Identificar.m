@@ -1,4 +1,4 @@
-function [gw,w,arm]= Ident1(n, d, eps1, tc1, y);
+function [gw,w,arm,Kp]= Identificar(n, d, eps1, tc1, y,u);
 
 %********** Calculo do Valor de Pico **************
 arm=0;
@@ -34,8 +34,17 @@ end;
 
 p=0;
 for i=1:kk-2, p=p+x(i+2)-x(i); end;
-    p=((p/(kk-2))-1.5)*tc1
-    w=2*pi/p
+    p=((p/(kk-2))-1.5)*tc1;
+    w=2*pi/p;
     gw=-(pi*sqrt(arm^2-eps1^2))/(4*d);
+num = 0;
+den = 0;
+for j=(n/2):(n/2)+ceil(p),
+    num = num + y(j);
+    den = den + u(j);
+end
+Kp = num/den;
+
 %end ;
+
 
