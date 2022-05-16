@@ -1,4 +1,4 @@
-function [gw,w,arm,Kp]= Identificar(n, d, eps1, tc1, y,u);
+function [gw,w,arm,Kp]= identificar(n, d, eps1, tc1, y,u);
 
 %********** Calculo do Valor de Pico **************
 arm=0;

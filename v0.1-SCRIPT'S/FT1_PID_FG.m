@@ -54,7 +54,7 @@
 
 %% 3 Identificar os parametros a partir do experimento com relé:
 
-    [gw,w,arm,Kp]=Identificar(n, d, eps,Tc,yr,ur);
+    [gw,w,arm,Kp]=identificar(n, d, eps,Tc,yr,ur);
 
     Ku = -1/gw;
     Tu = (2*pi)/w;
@@ -180,7 +180,7 @@ Kii(i) = Ki/Ami;
  end ;
  
  
-      ISE_t2 = objfunc(erro,tempo,'ISE')
+     ISE_t2 = objfunc(erro,tempo,'ISE')
      ITSE_t2 = objfunc(erro,tempo,'ITSE')
      ITAE_t2 = objfunc(erro,tempo,'ITAE')
      IAE_t2 = objfunc(erro,tempo,'IAE')
