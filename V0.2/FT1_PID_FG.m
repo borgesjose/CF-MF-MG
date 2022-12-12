@@ -72,7 +72,7 @@
 %  c = 0.1067/0.2133;
 %% Definições do controlador AT-PID-FG: 
 
-    Am = 3;
+    Am = 1;
 
     Am_min = 2; 
     Am_max = 5;
@@ -87,7 +87,7 @@
     Kc = K(1);
     Ki = K(2);
     Kd = K(3);
-    
+    K
 %% Aplicando o controlador - OLD version
 for i=1:nptos,
     if (i<=nptos/2)  ref(i)=1; end;
@@ -162,9 +162,9 @@ k = 2*P1(i)*P2(i);
 %             beta = -(Kc)*(1+2*((Td)/Tamostra)-(Tamostra/(2*(Ti))));
 %             gama = (Kc)*(Td)/Tamostra;
 
-Kci(i) = Kc/Ami;
-Kdi(i) = Kd/Ami;
-Kii(i) = Ki/Ami;
+            Kci(i) = Kc/Ami;
+            Kdi(i) = Kd/Ami;
+            Kii(i) = Ki/Ami;
 
       % new version
             alpha = Kci(i)+ Kdi(i)/Tamostra + (Kii(i)*Tamostra)/2;
