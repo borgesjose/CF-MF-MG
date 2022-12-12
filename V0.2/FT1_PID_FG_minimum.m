@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
-% Universidade Federal do Piauí                       %
+% Universidade Federal do PiauÃ­                       %
 % Campus Ministro Petronio Portela                    %
-% Copyright 2022 -José Borges do Carmo Neto-          %
-% @author José Borges do Carmo Neto                   %
+% Copyright 2022 -JosÃ© Borges do Carmo Neto-          %
+% @author JosÃ© Borges do Carmo Neto                   %
 % @email jose.borges90@hotmail.com                    %
 %  Fuzzy PID controllers for the Phase                %
 %  and Gain Margins of the System                     % 
@@ -12,7 +12,7 @@
 
 %% 1 - Tratando o processo:
 
-% Nesta etapa o processo é discretizado:
+% Nesta etapa o processo Ã© discretizado:
 % Sendo:
 
     p1 = (1/2.5);
@@ -32,17 +32,17 @@
     ftz = c2d(ft,Tc,'zoh')
 
 %% 2 - Aplicando o rele:
-% Agora é o momento de aplicar o relé a planta: (rele com histerese)
+% Agora Ã© o momento de aplicar o relÃ© a planta: (rele com histerese)
 
-    n = 200; % Numero de pontos de análise
+    n = 200; % Numero de pontos de anÃ¡lise
 
     eps = 0.2; 
     d = 0.5;
 
     nptos = 1000
 
-% Chama a função rele com histerese passando os paramentros do rele e os polos e ganho do proceso de 2 ordem
-% Retorna o vetor yr, e ur com os resultados da aplicação do relé: 
+% Chama a funÃ§Ã£o rele com histerese passando os paramentros do rele e os polos e ganho do proceso de 2 ordem
+% Retorna o vetor yr, e ur com os resultados da aplicaÃ§Ã£o do relÃ©: 
 
     [yr,ur] = rele_h(n,Tc,d,eps,[p1,p2],k); 
 
@@ -52,7 +52,7 @@
 %     hold on;
 %     plot(ur);
 
-%% 3 Identificar os parametros a partir do experimento com relé:
+%% 3 Identificar os parametros a partir do experimento com relÃ©:
 
     [gw,w,arm,Kp]=identificar(n, d, eps,Tc,yr,ur);
 
@@ -70,24 +70,27 @@
 %  a = 1/0.2133;
 %  b = 0.6667/0.2133;
 %  c = 0.1067/0.2133;
-%% Definições do controlador AT-PID-FG: 
+%% DefiniÃ§Ãµes do controlador AT-PID-FG: 
 
-    Am = 1;
+    Am = 3;
 
-    Am_min = 1; 
-    Am_max = 2;
+    Am_min = .1; 
+    Am_max = 3;
     Theta_m_min = 45;
     Theta_m_max = 72;
     
     %Theta_m = (180/2)*(1-(1/Am));
-
+H1 = 0.1;
+H2 = 0.1;
+H3 = 0.9;
+H4 = 0.9;
 %% Sintonizanodo o PID:
 
     K = (pi/(2*Am*L))*[b;c;a];
     Kc = K(1);
     Ki = K(2);
     Kd = K(3);
-    K
+    
 %% Aplicando o controlador - OLD version
 for i=1:nptos,
     if (i<=nptos/2)  ref(i)=1; end;
@@ -108,52 +111,25 @@ P1(i) = p1+rlevel*rand; % Aplicando ruido na modelagem
 P2(i) = p2+ruido(i);  % Aplicando ruido na modelagem
 k = 2*P1(i)*P2(i); 
     
-[c0,c1,c2,r0,r1,r2] = discretiza_zoh(P1(i),P2(i),k,Tc); %chama a função que discretiza o processo utilizano um ZOH;
+[c0,c1,c2,r0,r1,r2] = discretiza_zoh(P1(i),P2(i),k,Tc); %chama a funÃ§Ã£o que discretiza o processo utilizano um ZOH;
 
      %if (i==550),r1 = - 1.84;r2 = 0.9109;  end % Ruptura no modelo
      
-     y(i)= -r1*y(i-1)-r2*y(i-2)+c0*u(i-2)+c1*u(i-3)+c2*u(i-4); % equação da diferença do processo
+     y(i)= -r1*y(i-1)-r2*y(i-2)+c0*u(i-2)+c1*u(i-3)+c2*u(i-4); % equaÃ§Ã£o da diferenÃ§a do processo
      
      erro(i)=ref(i)-y(i); %Erro
      r(i)=(erro(i)-erro(i-1));%Erro rate
  
-     %    {***********Região IC-1*****************}
-     if ( erro(i)>0  & r(i)>0 ) 
+     %    {***********MINIMUM FT-PID-FG*****************}
+   
          
-         mi5 = (-r(i)/L + 1)*(-erro(i)/L + 1); mi6 = (-erro(i)/L + 1)*(r(i)/L); mi8 = (erro(i)/L)*(-r(i)/L + 1); mi9 = (r(i)/L)*(erro(i)/L); 
+         mi1 = (r(i)/(2*L) + 1/2)*(erro(i)/(2*L) + 1/2); mi2 = (erro(i)/(2*L) + 1/2)*(-r(i)/(2*L) + 1/2); mi3 = (-erro(i)/(2*L) + 1/2)*(r(i)/(2*L) + 1/2); mi4 = (-erro(i)/(2*L) + 1/2)*(-r(i)/(2*L) + 1/2); 
             
-         Am(i) = mi5*(1-exp(-mi5*4)) + mi6*(1-exp(-mi6*4)) + mi8*(exp(-mi8*4)) + mi9*(exp(-mi9*4));
+         Am(i) = mi1*H1 + mi2*H2 + mi3*H3 + mi4*H4;
          
-     end;
+   
 
-%      {***********Região IC-2*****************}
-      if ( erro(i)<=0  & r(i)<=0) 
-         
-         mi1 = (-r(i)/L )*(-erro(i)/L); mi2 = (-erro(i)/L)*(r(i)/L + 1); mi4 = (-r(i)/L)*(erro(i)/L + 1); mi5 = (r(i)/L + 1)*(erro(i)/L + 1); 
-            
-         Am(i) = mi1*(exp(-mi1*4)) + mi2*(exp(-mi2*4)) + mi4*(1 - exp(-mi4*4)) + mi5*( 1 - exp(-mi5*4));  
-      
-      end;
 
- %     {***********Região IC-3*****************}
-      if ( erro(i)>0  & r(i)<=0) 
-      
-           mi5 = (-r(i)/L + 1)*(-erro(i)/L + 1); mi4 = (-erro(i)/L + 1)*(r(i)/L); mi8 = (erro(i)/L)*(-r(i)/L + 1); mi7 = (-r(i)/L)*(erro(i)/L); 
-            
-           Am(i) = mi5*(1-exp(-mi5*4))+mi4*(1-exp(-mi4*4))+mi8*(exp(-mi8*4))+mi7*(exp(-mi7*4));
-      
-      end;
-      
- %      {***********Região IC-4*****************}
-      if ( erro(i)<=0  & r(i)>0)
-          
-          mi5 = (-r(i)/L + 1)*(erro(i)/L + 1); mi6 = (erro(i)/L + 1)*(r(i)/L); mi2 = (-erro(i)/L)*(-r(i)/L + 1); mi3 = (-r(i)/L)*(-erro(i)/L); 
-            
-          Am(i) = mi5*(1-exp(-mi5*4)) + mi6*(1-exp(-mi6*4)) + mi2*(exp(-mi2*4)) + mi3*(exp(-mi3*4));
-      
-      end
-     
-      
             Ami = Am(i)*Am_max + Am_min*(1 - Am(i)); 
             %Ami = 1;
       %Controlador:
@@ -162,9 +138,9 @@ k = 2*P1(i)*P2(i);
 %             beta = -(Kc)*(1+2*((Td)/Tamostra)-(Tamostra/(2*(Ti))));
 %             gama = (Kc)*(Td)/Tamostra;
 
-            Kci(i) = Kc/Ami;
-            Kdi(i) = Kd/Ami;
-            Kii(i) = Ki/Ami;
+Kci(i) = Kc/Ami;
+Kdi(i) = Kd/Ami;
+Kii(i) = Ki/Ami;
 
       % new version
             alpha = Kci(i)+ Kdi(i)/Tamostra + (Kii(i)*Tamostra)/2;
@@ -180,10 +156,10 @@ k = 2*P1(i)*P2(i);
  end ;
  
  
-     ISE_t1 = objfunc(erro,tempo,'ISE')
-     ITSE_t1 = objfunc(erro,tempo,'ITSE')
-     ITAE_t1 = objfunc(erro,tempo,'ITAE')
-     IAE_t1 = objfunc(erro,tempo,'IAE')
+     ISE_t1_m = objfunc(erro,tempo,'ISE')
+     ITSE_t1_m = objfunc(erro,tempo,'ITSE')
+     ITAE_t1_m = objfunc(erro,tempo,'ITAE')
+     IAE_t1_m = objfunc(erro,tempo,'IAE')
      
 %plotar seinal de saida e  de controle:    
 figure;
@@ -192,7 +168,7 @@ plot(tempo,y,'g-');
 hold on;
 plot(tempo,u);
 plot(tempo,ref);
-title(['FT1-PID-FG:',num2str(rlevel), ' ISE:', num2str(ISE_t1), ', ITSE:' ,num2str(ITSE_t1),', IAE:' ,num2str(IAE_t1), ', ITAE:' ,num2str(ITAE_t1)])
+title(['FT1-PID-FG:',num2str(rlevel), ' ISE:', num2str(ISE_t1_m), ', ITSE:' ,num2str(ITSE_t1_m),', IAE:' ,num2str(IAE_t1_m), ', ITAE:' ,num2str(ITAE_t1_m)])
 %%
 % %plotar P1 e P2
 % figure;
