@@ -39,7 +39,7 @@
     eps = 0.2; 
     d = 0.5;
 
-    nptos = 1000
+    nptos = 2000
 
 % Chama a função rele com histerese passando os paramentros do rele e os polos e ganho do proceso de 2 ordem
 % Retorna o vetor yr, e ur com os resultados da aplicação do relé: 
@@ -97,6 +97,17 @@ for i=1:nptos,
     if (i>nptos/2)   ref(i) = 2; end;
 end ;
 
+patamar = 1
+passo = 1
+for i=1:nptos,
+
+            if (i<=nptos/4)  ref(i)= patamar; end;
+            if (i>nptos/4)   ref(i) = patamar + passo ; end;
+            if (i>nptos/2 & i<=3*nptos/4)  ref(i)= patamar + passo; end;
+            if (i>3*nptos/4)   ref(i) = patamar + 2*passo; end;
+
+        end ;
+
 y(4)=0 ; y(3)=0 ; y(2)=0 ; y(1)=0 ; 
 u(1)=0 ; u(2)=0 ; u(3)=0; u(4)=0;
 
@@ -138,9 +149,9 @@ k = 2*P1(i)*P2(i);
 %             beta = -(Kc)*(1+2*((Td)/Tamostra)-(Tamostra/(2*(Ti))));
 %             gama = (Kc)*(Td)/Tamostra;
 
-Kci(i) = Kc/Ami;
-Kdi(i) = Kd/Ami;
-Kii(i) = Ki/Ami;
+        Kci(i) = Kc/Ami;
+        Kdi(i) = Kd/Ami;
+        Kii(i) = Ki/Ami;
 
       % new version
             alpha = Kci(i)+ Kdi(i)/Tamostra + (Kii(i)*Tamostra)/2;
